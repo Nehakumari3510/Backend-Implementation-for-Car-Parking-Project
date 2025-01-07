@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python CRUD App with MySQL
 
 ## Description
@@ -115,3 +116,6 @@ Once the app is running, you can interact with it through your browser at http:/
 
 
 
+=======
+# parking_lot
+>>>>>>> 51f70788ebe9f69305c81901e29d5e2bf1e3d0c9
