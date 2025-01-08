@@ -1,48 +1,87 @@
-<<<<<<< HEAD
-# Python CRUD App with MySQL
+## Python CRUD App with MySQL
+## Parking Management System 
 
-## Description
+This project is a Flask-based Parking Management System that uses MySQL as the database to manage floors, rows, slots, users, and parking reservations. It includes APIs for parking cars, removing cars, and displaying the parking lot structure.
 
-This is a simple python CRUD application that manages a parking_lot stored in a database. The app supports**MySQL**, allowing users to create, read, put, and delete vehicle. Depending on your database preference, the app will automatically direct you to use **app_mysql.py** (for MySQL).
+## Features
+
+Relational Database Structure: Models for floors, rows, slots, users, reservations, and parking sessions.
+
+RESTful API Endpoints:
+
+Display the parking lot structure.
+
+Park a car.
+
+Remove a car by ticket ID.
+
+MySQL Integration: Uses Flask-SQLAlchemy and PyMySQL to connect to MySQL.
+
+
+
+## ChatGpt conversation**
+
+Word file attached on GitHub if you have any query so you can check word file on GitHub. there is mention how we create this code.   
 
 ## Prerequisites
 
-Ensure the following are installed on your system:
-- Python 3.x
-- Flask (framework)
+- Python (3.7 or later)
+
 - MySQL
 
+- Flask
 
-## Technologies Used
+- Flask-SQLAlchemy
 
-- python (Backend Framework)
-- **MySQL**:
-- mysql-connector-python (MySQL driver for Python)
+- PyMySQL
 
-## commands for install packages-
+## commands for install python -
+
 sudo dnf install python3
--pip install mysql-connector-python or download from browser   
+
+
+## commands for install MYSQL -
+-pip install mysql-connector-python or download from browser 
+pip install pymysql
+pip install sqlalchemy
+
+## commands for push the data to GitHub -
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/Khalid-IBS/parking_lot.git
+git branch -M main
+git push -u origin main
+git add .
+git commit -m "Your commit message"
+git push
 
    
 # DATABASE SETUP-
 
-**create a database**
-CREATE DATABASE parking_db;
+## First create the database name in your mysql workbench by run as below mwntion**
 
-**Create the table in the parking_db database:**
--- Create the database
-CREATE DATABASE IF NOT EXISTS parking_db;
+CREATE DATABASE parking_db;       ## name whatever you want.
 
--- Use the database
+
+## then type in your MYSQL workbench as below mwntion**
+
 USE parking_db;
 
--- Create the `floors` table
+## then your SCHEMA (folder name in your MYSQL workbench) is ready to create the table**
+
+## Create the `floors` table by run data as below mwntion** 
+
+
 CREATE TABLE floors (
     floor_id INT AUTO_INCREMENT PRIMARY KEY,
     floor_name VARCHAR(50) NOT NULL
 );
 
--- Create the `users` table
+
+## Create the `users` table by run data as below mwntion** 
+
+
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(100) NOT NULL,
@@ -52,7 +91,9 @@ CREATE TABLE users (
     registration_no VARCHAR(20)
 );
 
--- Create the `rows` table (use backticks around `rows` because it is a reserved keyword)
+## Create the `rows` table  by run data as below mwntion (use backticks around `rows` because it is a reserved keyword) **
+
+
 CREATE TABLE `rows` (
     row_id INT AUTO_INCREMENT PRIMARY KEY,
     floor_id INT NOT NULL,
@@ -60,7 +101,9 @@ CREATE TABLE `rows` (
     FOREIGN KEY (floor_id) REFERENCES floors(floor_id) ON DELETE CASCADE
 );
 
--- Create the `slots` table
+## Create the `slots` table by run data as below mwntion**
+
+
 CREATE TABLE slots (
     slot_id INT AUTO_INCREMENT PRIMARY KEY,
     row_id INT NOT NULL,
@@ -73,7 +116,9 @@ CREATE TABLE slots (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
--- Create the `reservations` table
+## Create the `reservations` table by run data as below mwntion**
+
+
 CREATE TABLE reservations (
     reservation_id INT AUTO_INCREMENT PRIMARY KEY,
     slot_id INT NOT NULL,
@@ -84,7 +129,7 @@ CREATE TABLE reservations (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
--- Create the `parkingsessions` table
+## Create the `parkingsessions` table by run data as below mwntion**
 CREATE TABLE parkingsessions (
     ticket_id VARCHAR(20) PRIMARY KEY,
     slot_id INT NOT NULL,
