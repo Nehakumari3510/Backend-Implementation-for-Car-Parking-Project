@@ -46,31 +46,31 @@ pip install pymysql
 pip install sqlalchemy
 
 ## commands for push the data to GitHub -
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/Khalid-IBS/parking_lot.git
-git branch -M main
-git push -u origin main
-git add .
-git commit -m "Your commit message"
-git push
+- git init
+- git add .
+- git commit -m "Initial commit"
+- git remote add origin https://github.com/Khalid-IBS/parking_lot.git
+- git branch -M main
+- git push -u origin main
+- git add .
+- git commit -m "Your commit message"
+- git push
 
    
 # DATABASE SETUP-
 
-## First create the database name in your mysql workbench by run as below mwntion**
+## First create the database name in your mysql workbench by run as below mention**
 
 CREATE DATABASE parking_db;       ## name whatever you want.
 
 
-## then type in your MYSQL workbench as below mwntion**
+## then type in your MYSQL workbench as below mention**
 
 USE parking_db;
 
 ## then your SCHEMA (folder name in your MYSQL workbench) is ready to create the table**
 
-## Create the `floors` table by run data as below mwntion** 
+## Create the `floors` table by run data as below mention** 
 
 
 CREATE TABLE floors (
@@ -79,7 +79,7 @@ CREATE TABLE floors (
 );
 
 
-## Create the `users` table by run data as below mwntion** 
+## Create the `users` table by run data as below mention** 
 
 
 CREATE TABLE users (
@@ -91,7 +91,7 @@ CREATE TABLE users (
     registration_no VARCHAR(20)
 );
 
-## Create the `rows` table  by run data as below mwntion (use backticks around `rows` because it is a reserved keyword) **
+## Create the `rows` table  by run data as below mention (use backticks around `rows` because it is a reserved keyword) **
 
 
 CREATE TABLE `rows` (
@@ -101,7 +101,7 @@ CREATE TABLE `rows` (
     FOREIGN KEY (floor_id) REFERENCES floors(floor_id) ON DELETE CASCADE
 );
 
-## Create the `slots` table by run data as below mwntion**
+## Create the `slots` table by run data as below mention**
 
 
 CREATE TABLE slots (
@@ -116,7 +116,7 @@ CREATE TABLE slots (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-## Create the `reservations` table by run data as below mwntion**
+## Create the `reservations` table by run data as below mention**
 
 
 CREATE TABLE reservations (
@@ -129,7 +129,7 @@ CREATE TABLE reservations (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-## Create the `parkingsessions` table by run data as below mwntion**
+## Create the `parkingsessions` table by run data as below mention**
 CREATE TABLE parkingsessions (
     ticket_id VARCHAR(20) PRIMARY KEY,
     slot_id INT NOT NULL,
