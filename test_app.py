@@ -23,5 +23,5 @@ def test_create_user(client):
     }
     response = client.post('/users', json=user_data)
     assert response.status_code == 201
-    json_data = response.get_json()
-    assert "user_id" in json_data
+    assert response.get_json()['message'] == "User created successfully"
+
