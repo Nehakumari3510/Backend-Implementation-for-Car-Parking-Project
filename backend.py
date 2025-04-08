@@ -6,19 +6,22 @@ import urllib.parse
 
 app = Flask(__name__)
 
-# URL encode the password to handle special characters
-password = urllib.parse.quote_plus("Khalid@1704")
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://root:{password}@localhost/parking_db2"
+username = "postgres" 
+password = urllib.parse.quote_plus("postgres-admin") 
+host = "localhost"
+port = 5433 
+database_name = "parking_db" 
+password = urllib.parse.quote_plus("postgres-admin")
+app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{username}:{password}@{host}:{port}/{database_name}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Models
+# Models with relationships
 class Floor(db.Model):
     __tablename__ = 'floors'
     floor_id = db.Column(db.Integer, primary_key=True)
     floor_name = db.Column(db.String(50))
-    capacity = db.Column(db.Integer)
     rows = db.relationship('Row', backref='floor', lazy=True)
 
 class Row(db.Model):
@@ -36,15 +39,16 @@ class Slot(db.Model):
     status = db.Column(db.Integer, default=1)  # 0 = Occupied, 1 = Free, 2 = Not in use
     vehicle_reg_no = db.Column(db.String(20), nullable=True)
     ticket_id = db.Column(db.String(20), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
 
 class User(db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
-    address = db.Column(db.String(255), nullable=True)
-    parking_sessions = db.relationship('ParkingSession', backref='user', lazy=True)
+    user_name = db.Column(db.String(100))
+    user_email = db.Column(db.String(100))
+    user_password = db.Column(db.String(50))
+    user_phone_no = db.Column(db.String(20))
+    user_address = db.Column(db.String(100))
 
 class ParkingSession(db.Model):
     __tablename__ = 'parkingsessions'
@@ -61,14 +65,9 @@ def display_parking_lot():
     try:
         floors = Floor.query.all()
         parking_lot = {}
-        total_capacity = 0
-        total_occupancy = 0
-
         for floor in floors:
             rows = Row.query.filter_by(floor_id=floor.floor_id).all()
             rows_data = {}
-            floor_occupancy = 0
-
             for row in rows:
                 slots = Slot.query.filter_by(row_id=row.row_id).all()
                 slots_data = []
@@ -78,27 +77,12 @@ def display_parking_lot():
                         'slot_name': slot.slot_name,
                         'status': slot.status,
                         'vehicle_reg_no': slot.vehicle_reg_no,
-                        'ticket_id': slot.ticket_id
+                        'ticket_id': slot.ticket_id,
+                        'user_id': slot.user_id
                     })
-                    if slot.status == 0:  # Occupied
-                        floor_occupancy += 1
                 rows_data[row.row_name] = slots_data
-
-            total_capacity += floor.capacity
-            total_occupancy += floor_occupancy
-            parking_lot[floor.floor_name] = {
-                'rows': rows_data,
-                'capacity': floor.capacity,
-                'occupancy': floor_occupancy,
-                'availability': floor.capacity - floor_occupancy
-            }
-
-        return jsonify({
-            'parking_lot': parking_lot,
-            'total_capacity': total_capacity,
-            'total_occupancy': total_occupancy,
-            'total_availability': total_capacity - total_occupancy
-        })
+            parking_lot[floor.floor_name] = rows_data
+        return jsonify(parking_lot)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -111,7 +95,7 @@ def park_car():
         if not vehicle_reg_no:
             return jsonify({"error": "Vehicle registration number is required."}), 400
 
-        slot = Slot.query.filter_by(status=1).first()  # Find the first free slot
+        slot = Slot.query.filter_by(status=1).first()
         if not slot:
             return jsonify({"error": "No available slots."}), 400
 
@@ -119,13 +103,6 @@ def park_car():
         slot.status = 0
         slot.vehicle_reg_no = vehicle_reg_no
         slot.ticket_id = ticket_id
-
-        parking_session = ParkingSession(
-            ticket_id=ticket_id,
-            slot_id=slot.slot_id,
-            vehicle_reg_no=vehicle_reg_no
-        )
-        db.session.add(parking_session)
         db.session.commit()
 
         return jsonify({"message": "Car parked successfully.", "ticket_id": ticket_id}), 200
@@ -147,16 +124,73 @@ def remove_car_by_ticket():
         if not slot:
             return jsonify({"error": "Ticket ID not found."}), 404
 
-        parking_session = ParkingSession.query.filter_by(ticket_id=ticket_id).first()
-        if parking_session:
-            parking_session.end_time = datetime.utcnow()
-
         slot.status = 1
         slot.vehicle_reg_no = None
         slot.ticket_id = None
         db.session.commit()
 
         return jsonify({"message": "Car removed successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# User APIs
+@app.route('/users', methods=['GET'])
+def get_users():
+    try:
+        users = User.query.all()
+        users_data = []
+        for user in users:
+            users_data.append({
+                'user_id': user.user_id,
+                'user_name': user.user_name,
+                'user_email': user.user_email,
+                'user_password': user.user_password,
+                'user_phone_no': user.user_phone_no,
+                'user_address': user.user_address
+            })
+        return jsonify(users_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    try:
+        data = request.get_json()
+        new_user = User(
+            user_name=data['user_name'],
+            user_email=data['user_email'],
+            user_password=data['user_password'],
+            user_phone_no=data['user_phone_no'],
+            user_address=data['user_address']
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({"message": "User created successfully.", "user_id": new_user.user_id}), 201
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Database integrity error."}), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    try:
+        data = request.get_json()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found."}), 404
+
+        user.user_name = data.get('user_name', user.user_name)
+        user.user_email = data.get('user_email', user.user_email)
+        user.user_password = data.get('user_password', user.user_password)
+        user.user_phone_no = data.get('user_phone_no', user.user_phone_no)
+        user.user_address = data.get('user_address', user.user_address)
+
+        db.session.commit()
+        return jsonify({"message": "User updated successfully."}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
