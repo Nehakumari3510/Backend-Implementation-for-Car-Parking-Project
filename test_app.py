@@ -1,15 +1,15 @@
 import pytest
-from app import app, db  # app.py must expose both app and db
+from app import create_app, db
 
 @pytest.fixture
 def client():
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:"  # In-memory DB for tests
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+    app = create_app({
+        'TESTING': True,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False
+    })
     with app.app_context():
         db.create_all()
-
     with app.test_client() as client:
         yield client
 
